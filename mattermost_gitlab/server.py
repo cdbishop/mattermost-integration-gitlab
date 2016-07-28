@@ -41,10 +41,11 @@ def new_event():
         event = event_formatter.as_event(request.json)
 
         if event.should_report_event(app.config['REPORT_EVENTS']):
+            channel_name = request.values['channel'] if 'channel' in request.values else None
             #text = event.format()
             attachment = event.format_attachment()
-            #post_text(text)
-            post_attachment(attachment)
+            #post_text(text, channel_name)
+            post_attachment(attachment, channel_name)
     except Exception:
         import traceback
         traceback.print_exc()
@@ -67,7 +68,8 @@ def new_ci_event():
 
         if event.should_report_event(app.config['REPORT_EVENTS']):
             text = event.format()
-            post_text(text)
+            channel_name = request.values['channel'] if 'channel' in request.values else None
+            post_text(text, channel_name)
     except Exception:
         import traceback
         traceback.print_exc()
@@ -75,7 +77,7 @@ def new_ci_event():
     return 'OK'
 
 
-def post_text(text):
+def post_text(text, channel):
     """
     Mattermost POST method, posts text to the Mattermost incoming webhook URL
     """
@@ -86,7 +88,9 @@ def post_text(text):
         data['username'] = app.config['USERNAME']
     if app.config['ICON_URL']:
         data['icon_url'] = app.config['ICON_URL']
-    if app.config['CHANNEL']:
+    if channel is not None:
+        data['channel'] = channel
+    elif app.config['CHANNEL']:
         data['channel'] = app.config['CHANNEL']
 
     headers = {'Content-Type': 'application/json'}
@@ -96,7 +100,7 @@ def post_text(text):
         print('Encountered error posting to Mattermost URL %s, status=%d, response_body=%s' % (app.config['MATTERMOST_WEBHOOK_URL'], resp.status_code, resp.json()))
 
 
-def post_attachment(attachment):
+def post_attachment(attachment, channel):
 
     data = {"attachments": [attachment]};
 
@@ -104,7 +108,9 @@ def post_attachment(attachment):
         data['username'] = app.config['USERNAME']
     if app.config['ICON_URL']:
         data['icon_url'] = app.config['ICON_URL']
-    if app.config['CHANNEL']:
+    if channel is not None:
+        data['channel'] = channel
+    elif app.config['CHANNEL']:
         data['channel'] = app.config['CHANNEL']
 
     headers = {'Content-Type': 'application/json'}
