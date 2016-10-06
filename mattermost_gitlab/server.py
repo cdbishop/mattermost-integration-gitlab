@@ -41,8 +41,10 @@ def new_event():
         event = event_formatter.as_event(request.json)
 
         if event.should_report_event(app.config['REPORT_EVENTS']):
-            text = event.format()
-            post_text(text)
+            #text = event.format()
+            attachment = event.format_attachment()
+            #post_text(text)
+            post_attachment(attachment)
     except Exception:
         import traceback
         traceback.print_exc()
