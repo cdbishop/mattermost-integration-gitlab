@@ -13,8 +13,7 @@ import argparse
 # Third-party imports
 from flask import Flask, request
 
-from . import event_formatter, constants
-
+import event_formatter, constants
 
 app = Flask(__name__)
 
