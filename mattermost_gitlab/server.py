@@ -94,6 +94,24 @@ def post_text(text):
         print('Encountered error posting to Mattermost URL %s, status=%d, response_body=%s' % (app.config['MATTERMOST_WEBHOOK_URL'], resp.status_code, resp.json()))
 
 
+def post_attachment(attachment):
+
+    data = {"attachments": [attachment]};
+
+    if app.config['USERNAME']:
+        data['username'] = app.config['USERNAME']
+    if app.config['ICON_URL']:
+        data['icon_url'] = app.config['ICON_URL']
+    if app.config['CHANNEL']:
+        data['channel'] = app.config['CHANNEL']
+
+    headers = {'Content-Type': 'application/json'}
+    resp = requests.post(app.config['MATTERMOST_WEBHOOK_URL'], headers=headers, data=json.dumps(data))
+
+    if resp.status_code is not requests.codes.ok:
+        print('Encountered error posting to Mattermost URL %s, status=%d, response_body=%s' % (app.config['MATTERMOST_WEBHOOK_URL'], resp.status_code, resp.json()))
+
+
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('MATTERMOST_WEBHOOK_URL', help='The Mattermost webhook URL you created')
