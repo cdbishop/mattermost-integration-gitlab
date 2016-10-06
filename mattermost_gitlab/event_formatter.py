@@ -56,6 +56,9 @@ class BaseEvent(object):
     def format(self):
         raise NotImplementedError
 
+    def format_attachment(self):
+        raise NotImplementedError
+
     def gitlab_user_url(self, username):
         base_url = '/'.join(self.data['repository']['homepage'].split('/')[:-2])
         return '{}/u/{}'.format(base_url, username)
@@ -121,6 +124,24 @@ class IssueEvent(BaseEvent):
         base_url = self.data['repository']['homepage']
 
         return fix_gitlab_links(base_url, text)
+
+    def format_attachment(self):
+        commits = ''
+        for c in self.data['commits']:
+          commits += "[%s](%s): %s\n" % (c['id'][0:6], c['url'], c['message'])
+          commits += "* %s\n" % (c['author']['name'])
+
+        data = {
+          "fallback": self.format(),
+          "color": "#FF8000",
+          "pretext": "%s pushed to branch [%s](%s) of [%s](%s)" % (self.data['user_name'], self.data['ref'].split('/')[-1],
+            self.data['project']['web_url'] + "/commits/" + self.data['ref'].split('/')[-1], self.data['project']['path_with_namespace'],
+            self.data['project']['git_http_url']),
+          "text":commits,
+          "title_link": "https://gitlab.vcatechnology.com"
+        }
+
+        return data
 
 
 class TagEvent(BaseEvent):
